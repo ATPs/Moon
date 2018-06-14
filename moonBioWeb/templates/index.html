@@ -1,0 +1,25 @@
+{% extends "header.html" %}
+
+
+{% block content %}
+<div  class="majordiv">
+    
+<br>
+<p>This is a website for internal use of Moonbio. We'll keep adding new applications.</p>
+<p><span><a href="/" class="company" title="MoonBio Internal Usage. Click to go back to the home page" id="main_nav">MoonBio</a></span> return to the main page. Links and short instructions for different applications.</p>
+<p><span><a href="/blastntaxa/"  title="use blastn search for taxonamy of target nucleotide sequences" id="main_nav">taxonomy</a></span> given a nucleotide sequence, use blastn search against different databases to find the complete taxonomic lineage for an organism.</p>
+<p><span><a href="/blastntaxa/abi"  title="convert abi/ab1 to fasta" id="main_nav">ABI</a></span> convert abi/ab1 file(s) to fasta</p>
+<p><span><a href="blast"  title="blast search with nucleotide or protein sequences" id="main_nav">blast</a></span> normal blast search. </p>
+<p><span><a href="http://www.bioinformatics.nl/cgi-bin/emboss/merger"  title="拼接双端测序序列，外部网站" target="_blank" id="main_nav">merger</a></span> 拼接5', 3'测序序列，外部网站</p>
+<p><span><a href="/helps/post" title="Help information" class="help" id="main_nav">Help</a></span> help information for different applications</p>
+
+
+    
+</div>
+
+
+
+
+
+
+{% endblock %}

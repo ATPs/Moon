@@ -1,0 +1,48 @@
+{% extends "header.html" %}
+
+
+{% block content %}
+<div  class="majordiv">
+<h2>blast search</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <h5>选择程序choose blast program</h5>
+    <div class="form-check">
+       <input type="radio" name="blast_method" value="blastn" checked > blastn：DNA序列, 数据库为DNA<br>
+       <input type="radio" name="blast_method" value="blastp" > blastp：氨基酸序列，数据库为蛋白质<br>
+       <input type="radio" name="blast_method" value="tblastn" > tblastn：氨基酸序列，数据库为DNA<br>
+    </div>
+    
+    <br>
+    <h5>填写DNA或蛋白质序列：单条序列或多条fasta格式序列</h5>
+    <textarea id="seq" rows="10" style="width: 100%; background-color:azure" name="sequences"></textarea>
+    <p>或者上传文件（单条序列或多条fasta格式序列）<input type="file" name="myfile"></p>
+    
+    <br>
+    <h5>选择blast数据库</h5>
+    <div class="form-check">
+        <input type="radio" name="blast_db" value="nt_micro" checked > nt_micro: DNA. ncbi nt去掉动植物序列<br>
+        <input type="radio" name="blast_db" value="nt"> nt: DNA. ncbi nt。数据库很大，会相当慢。公司没有换性能更强的服务器的话，慎用！<br>
+        <input type="radio" name="blast_db" value="Ezbio" > Ezbio:  DNA. 基因组已知的物种的16s序列<br>
+        <input type="radio" name="blast_db" value="SILVA16s" > SILVA16s: DNA. 所有已知高质量的16s序列<br>
+        <input type="radio" name="blast_db" value="SILVA18s" > SILVA18s: DNA. 所有已知高质量的18s序列<br>
+        <input type="radio" name="blast_db" value="fungi" > fungi: DNA. 专门的真菌ITS数据库<br>
+        <input type="radio" name="blast_db" value="nr" > nr: 蛋白质. ncbi nr。数据库很大，会相当慢。公司没有换性能更强的服务器的话，慎用！<br>
+        
+    </div>
+
+    <button type="submit" class="btn btn-primary" id="submit_run" onclick="myFunction()">blast</button>
+</form>
+
+<script>
+function myFunction() {
+    document.getElementById("submit_run").innerHTML = "running! wait!正在运行，不要再次点击";
+    document.getElementById("submit_run").style.background = "red";
+}
+</script>
+
+
+</div>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "header.html" %}
+
+
+{% block content %}
+<div class="majordiv">
+
+<h2>Use blastn search to identify taxonomy of target nucleotide sequences</h2>
+<h5>Upload a single <b>ZIP</b> file with your sequences, select databases you want to search and click <button class="btn btn-primary">start search</button></h5>
+<p>比对真菌序列，如果是<b>abi/ab1</b>文件，先通过点击导航栏的<a href="/blastntaxa/abi">ABI</a>，将abi文件转化为序列文件，再进行物种鉴定</p>
+<p style="color: red">升级了！如果是单个的文本文件，不用改扩展名，不用压缩为zip文件，直接提交。</p>
+<p>当提交的序列很多时，需要运行很久才能得到结果。长时间等待，与服务器之间的连接可能会断开，导致结果无法呈现。
+    <a href="today">可尝试点击这里查看本月全部结果。文件名是任务提交的时间，精确到秒。已经提交过的任务不用再次提交啦。</a> 
+</p>
+
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="myfile">
+    
+    <br><br>
+    <p>选择至少一个database。细菌建议选择Ezbio，也可加上SILVA，也可以用nt_micro。真菌建议选择fungi和nt_micro。选择Ezbio/fungi，程序运行的较快。nt_micro会比较慢。提交序列数目没有上限。通过导航栏的"taxonomy"按钮来刷新页面</p>
+    <div class="form-check">
+        <input type="checkbox" name="database" value="Ezbio" checked> <a href="http://help.bioiplug.com/about-ezbiocloud-net/" target="_blank">Ezbio</a>： 基因组已知的物种的16s序列<br>
+        <input type="checkbox" name="database" value="SILVA"> <a href="https://www.arb-silva.de/documentation/" target="_blank">SILVA</a>： 所有已知高质量的16s序列<br>
+        <input type="checkbox" name="database" value="fungi"> <a href="https://unite.ut.ee/repository.php" target="_blank">fungi</a>： 专门的真菌ITS数据库<br>
+        <input type="checkbox" name="database" value="nt_micro"> <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi" target="_blank">nt_micro</a>： ncbi nt去掉动植物序列<br>
+    </div>
+    
+    <br><p>选择taxonomy的呈现顺序：</p>
+    <div class="form-check">
+        <input type="radio" name="taxonomy" value="0" checked>default: 'species', 'genus','family', 'order', 'class', 'phylum' <br>
+        <input type="radio" name="taxonomy" value="1">reverse: 'phylum', 'class', 'order', 'family', 'genus', 'species' <br>
+        <input type="radio" name="taxonomy" value="2">reverse2: 'species', 'phylum', 'class', 'order', 'family', 'genus' <br>
+    </div>
+    <button type="submit" class="btn btn-primary" id="submit_run" onclick="myFunction()">start search</button>
+    
+</form>
+<script>
+function myFunction() {
+    document.getElementById("submit_run").innerHTML = "running! wait!正在运行，不要再次点击";
+    document.getElementById("submit_run").style.background = "red";
+}
+</script>
+
+<p></p>
+
+{% if uploaded_file_url %}
+    <h4>Finished! Download the result here: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></h4>
+{% endif %}
+
+<h2>{{ result }}</h2>
+
+
+{% include "blastntaxa/include/instruction.html" %} 
+<p style="color: red">如果一个文件里面有很多条fasta序列，直接把文件扩展名改为'.seq'，就可以当作普通序列文件来用了。</p>
+<p style="color: red">如果很久也没有出结果，不要关闭网页，只需耐心等待。不要重新点击“start search”按钮！</p>
+
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "header.html" %}
+
+
+
+{% block content %}
+<div class="majordiv">
+     
+<br>
+   <p>Click links below to get help information in details.</p>
+    {% for post in object_list %}
+        <p>
+            <span class="date">{{ post.date|date:"Y-m-d" }}</span>
+            <span class="author">{{post.author}}</span>
+            <a href="/helps/{{post.id}}" id="links"> {{post.title}} </a>
+        </p>
+        
+    {% endfor %}
+<a href="/helps/test">test</a>
+     
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "header.html" %}
+
+
+
+{% block content %}
+<div class="majordiv">
+
+<h2>本月运行结果</h2>
+   
+{% for c in content %}
+    <p><a href="/media/{{c}}">{{c}}</a></p>
+{% endfor %}
+
+
+
+</div>
+
+
+
+
+{% endblock %}
+
+
+
+
+
+

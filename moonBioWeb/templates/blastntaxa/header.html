@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MoonBio</title>
+    {% load staticfiles %} 
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" type="text/css"/>
+</head>
+<body>
+    <div>
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

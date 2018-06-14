@@ -1,0 +1,119 @@
+headnav ul{
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #000000;
+}
+
+headnav ul li {
+    float: left;
+}
+
+
+headnav ul li a {
+    display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 4px 5px;
+    text-decoration: none;
+}
+
+headnav ul li a:hover {
+    background-color: #ccffcc;
+}
+
+.help{
+    color:#aaaaaa;
+}
+headnav .company {
+    background-color: MediumSeaGreen;
+}
+
+html, body { 
+    height: 100%; 
+} 
+.wrapper{ 
+    min-height: 100%; 
+    margin-bottom: -30px; 
+} 
+.wrapper:after { 
+    content: ""; 
+    display: block; 
+} 
+.footer, .wrapper:after {
+    height: 30px; 
+    text-align: right;
+    color:grey;
+} 
+
+#main_nav {
+    display: inline-block;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    min-width: 100px;
+    background-color:black;
+}
+#main_nav:hover {
+    background-color: #ccffcc;
+    color:black;
+}
+
+#links{
+    display: inline-block;
+    color: blue;
+}
+
+
+#links:hover{
+    color:MediumSeaGreen;
+}
+
+.date{
+    color:#777777;
+}
+.author{
+    color:#777777;
+    background: #eeeeee;
+    display: inline-block;
+    min-width: 50px;
+    text-align: center;
+    
+}
+
+
+pre{
+    white-space: pre-wrap;
+}
+
+.body{
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    text-align: left;
+    background-color: #fff;
+    white-space: pre-wrap;
+}
+.coding{
+    display: block;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    color:RoyalBlue;
+    word-break: break-all;
+}
+
+.tabling{
+    display: block;
+    padding-left: 20px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+.majordiv{
+    max-width:1024px;
+    margin: auto;
+}
+

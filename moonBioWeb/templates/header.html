@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MoonBio</title>
+    {% load staticfiles %} 
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" type="text/css"/>
+    <link rel="stylesheet" href="{% static 'moonXC/moonXC.css' %}" type="text/css"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div class="wrapper">
+    <headnav>
+       <ul>
+           <li><a href="/" class="company" title="MoonBio Internal Usage. Click to go back to the home page">MoonBio</a></li>
+           <li ><a href="/blastntaxa/"  title="use blastn search for taxonamy of target nucleotide sequences">taxonomy</a></li>
+           <li ><a href="/blastntaxa/abi"  title="convert abi to fasta">ABI</a></li>
+           <li ><a href="/blast"  title="blast search with nucleotide or protein sequences">blast</a></li>
+           <li><a href="http://www.bioinformatics.nl/cgi-bin/emboss/merger"  title="拼接双端测序序列，外部网站" target="_blank">merger</a></li>
+           <li><a href="/helps/post" title="Help information" class="help" >Help</a></li>
+       </ul>
+    </headnav>
+
+    <div>
+        {% block content %}
+        {% endblock %}
+    </div>
+</div>
+
+    
+    <footer class="footer">Copyright &copy; MoonBio 2018. By XC</footer>
+
+</body>
+</html>

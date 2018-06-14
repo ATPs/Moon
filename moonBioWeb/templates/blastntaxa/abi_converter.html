@@ -1,0 +1,36 @@
+{% extends "header.html" %}
+
+
+{% block content %}
+<div class="majordiv">
+
+<h2>将一个或多个二进制的'<b>.abi</b>'或'<b>.ab1</b>'文件转化为文本格式的序列文件</h2>
+<h5>如果是一个文件，直接提交。如果是多个文件，将多个需要转化的abi文件打包为一个<b>ZIP</b>文件,再提交。点击<button class="btn btn-primary">convert</button>执行格式转化</h5>
+<p>单个文件的转化结果直接在网页上显示。'.zip'文件的结果在网页上显示，也可以下载</p>
+<p>convert '<b>.abi</b>' or '<b>.ab1</b>' file(s) to fasta. Upload a single '<b>.ab1</b>' file or a <b>ZIP</b> file with your abi files, and click "convert"</p>
+
+
+
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="myfile">
+    
+    
+    <button type="submit" class="btn btn-primary">convert</button>
+</form>
+
+{% if uploaded_file_url %}
+    <p>Finished! Download the result here: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></p>
+{% endif %}
+
+<h2>{{ result|linebreaksbr }}</h2>
+<p style="word-wrap: break-word;">{{ fasta|linebreaksbr }}</p>
+
+
+{% include "blastntaxa/include/instruction.html" %} 
+
+
+</div>
+
+{% endblock %}
