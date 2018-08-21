@@ -73,13 +73,13 @@ def getFastaFromFile(filename):
                 return ""
             print(filename, "contains RYSWKM, ambiguous bases")
         fasta_seq = ''.join(seq)
-        return fasta_str + cleanNNNsSeq(fasta_seq).upper() + "\n"
+        return fasta_str + cleanNNNsSeq(fasta_seq) + "\n"
     seqs = list(SeqIO.parse(open(filename),format = "fasta"))
-    if len(seqs) == 1:#if there is only one seq in fasta, use file name as sequence name
+    if len(seqs) == 1:
         fasta_seq = str(SeqIO.read(open(filename),format = "fasta").seq)
-        return fasta_str + cleanNNNsSeq(fasta_seq).upper() + "\n"
+        return fasta_str + cleanNNNsSeq(fasta_seq) + "\n"
     else:
-        return "".join([">"+e.id+"\n"+cleanNNNsSeq(str(e.seq)).upper() +"\n" for e in seqs])
+        return "".join([">"+e.id+"\n"+cleanNNNsSeq(str(e.seq))+"\n" for e in seqs])
 
 def taxaFinder(folder = folder, db = "fungi", taxa_order = "0"):
     '''
@@ -144,7 +144,6 @@ def taxaFinder(folder = folder, db = "fungi", taxa_order = "0"):
     df_DB_keep1['seq'] = df_DB_keep1['query'].apply(lambda x:str(dc_seq[x].seq))
     df_DB_keep1['length'] = df_DB_keep1['seq'].apply(lambda x:len(x))
     
-    df_DB_keep1
     df_DB_keep1.loc[:,['query', 'subject', 'seq', 'length', 'matchLength', 'identical', 'qcover','identity', 'taxID'] + taxa + [db+"Taxa"]].to_excel(folder + "Best{keyword}Result.xlsx".format(keyword=db), index = False)
     
     queries = set(df_DB_keep1["query"])

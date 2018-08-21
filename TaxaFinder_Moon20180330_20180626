@@ -1,0 +1,291 @@
+#!/usr/bin/env /mnt/d/linux/P/anaconda3/bin/python3.6
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Mar 30 13:35:56 2018
+
+@author: x
+"""
+folder = "."
+
+import glob
+import re
+import subprocess
+import pandas as pd
+import numpy as np
+from Bio import SeqIO
+
+dcDB = {"fungi":"/mnt/d/linux/W/NCBI/fungi/ITS7.2",
+        "SILVA":"/mnt/d/linux/W/NCBI/SILVA/SILVA16sDNA",
+        "Ezbio":"/mnt/d/linux/W/NCBI/Ezbio/eztaxon_qiime_full",
+        #"nt_micro":"/mnt/d/linux/W/NCBI/nt_ref/nt_micro",
+        "nt_micro":"/mnt/c/P/DB/nt_micro/nt_micro",
+        ### use SSD to increase speed
+        }
+
+dcLineage = {"fungi":"/mnt/d/linux/W/NCBI/fungi/ITS7.2.head",
+             "SILVA":"/mnt/d/linux/W/NCBI/SILVA/SILVA16sDNA.head",
+             "Ezbio":"/mnt/d/linux/W/NCBI/Ezbio/eztaxon_id_taxonomy.txt",
+             "nt_micro":"/mnt/d/linux/W/NCBI/taxonamy/speicesLineage.head"
+             }
+
+DEFAULT = ['species', 'genus', 'family', 'order', 'class', 'phylum']
+REVERSE = ['phylum', 'class', 'order', 'family', 'genus', 'species']
+REVERSE2 = ['species', 'phylum', 'class', 'order', 'family', 'genus']
+dcTaxa = {"0":DEFAULT,"1":REVERSE,"2":REVERSE2}
+
+def getSeqFiles(folder):
+    '''
+    given a foler name, return a list of all sequence files.
+    seq files are files end with .seq
+    '''
+    files = glob.glob(folder + '**/*.seq', recursive=True)
+    files += glob.glob(folder + '**/*.SEQ', recursive=True)
+    return files
+
+def cleanNNNsSeq(seq):
+    '''
+    seq is a DNA sequence with ATCGN(atcgn), return a longest seq with no n
+    seq = 'nncgngtgcttacncatgcagtcgac', return 'catgcagtcgac'
+    '''
+    seqs = re.split(re.compile('n+',re.I), seq)
+    seqs_sort = sorted(seqs, key=len)
+    return seqs_sort[-1]
+    
+def getFastaFromFile(filename):
+    '''
+    given a filename, return a str of fasta format.
+    some files contain extra info
+    filename looks like '/mnt/d/linux/W/MoonNt/KC/180223 SEQ/MN210615.seq'
+    return a string of fasta format
+    '''
+    fasta_str = ">" + re.split("\\\\|/",filename)[-1].split(".")[0] + "\n"
+    txt = open(filename).read()
+    if len(txt) == 0:
+        print(filename,'empty file')
+        return ''
+    txt_ls = txt.split("\n")
+    if txt_ls[0][0] != ">":
+        seq = [e for e in txt_ls if re.match("[ATCGN]+ *\n?$",e,re.I)]
+        if len(seq) == 0:#may contain RYSWKM, ambiguous bases
+            seq = [e for e in txt_ls if re.match("[ATCGNRYSWKM]+ *\n?$",e,re.I)]
+            if len(seq) == 0:
+                print(filename, "No nucleotide sequences identified")
+                return ""
+            print(filename, "contains RYSWKM, ambiguous bases")
+        fasta_seq = ''.join(seq)
+        return fasta_str + cleanNNNsSeq(fasta_seq) + "\n"
+    seqs = list(SeqIO.parse(open(filename),format = "fasta"))
+    if len(seqs) == 1:
+        fasta_seq = str(SeqIO.read(open(filename),format = "fasta").seq)
+        return fasta_str + cleanNNNsSeq(fasta_seq) + "\n"
+    else:
+        return "".join([">"+e.id+"\n"+cleanNNNsSeq(str(e.seq))+"\n" for e in seqs])
+
+def taxaFinderSILVA(folder = folder, taxa_order = "0"):
+    '''
+    given a path of a folder, output a file with the alignment and taxa info for the sequences
+    '''
+    taxa = dcTaxa[taxa_order]
+    # add the slash to make the path easier to use
+    if folder[-1] != "/":
+        folder = folder + "/"
+    
+    # get paths of all sequence files
+    files = getSeqFiles(folder)
+    
+    # get all fasta sequences
+    fasta_seqs = [getFastaFromFile(e) for e in files]
+    folder = folder + folder.split("/")[-2]+"_"
+    # save the fasta_seqs to a file in folder
+    open(folder + "AllSeqs.fasta","w").write("".join(fasta_seqs))
+    
+    # run local blast against SILVA
+    command_line = "/mnt/d/linux/P/blast/bin/blastn -db /mnt/d/linux/W/NCBI/SILVA/SILVA16sDNA -query {folder}AllSeqs.fasta  -out {folder}AllSeqs.fasta.SILVA.tab -num_threads 8 -max_target_seqs 100 -word_size {word_size} -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovhsp staxids'".format(folder = folder, word_size=28)
+    subprocess.run(command_line, shell=True)
+    
+    # read in blast result for SILVA
+    df_SILVA = pd.read_csv("{folder}AllSeqs.fasta.SILVA.tab".format(folder = folder), sep = "\t",header = None, dtype = {0:str,1:str,2:float,3:int,4:int,5:int,6:int,7:int,8:int,9:int,10:float,11:float,12:int,13:str})
+    df_SILVA.columns = ["query", "subject","identity","matchLength","missMatch","gap","qstart","qend","sstart", "send", "evalue", "bitScore", "qcover", "taxID"]
+    ## add column 14, length of identical bases
+    df_SILVA["identical"] = round(df_SILVA["identity"] * df_SILVA["matchLength"]/100)
+    ## for subject id, only keep accession number
+    df_SILVA["subject"] = df_SILVA["subject"].apply(lambda x: x.split(".")[0])
+    df_SILVA["filter1"] = (df_SILVA["identity"] > 97) & (df_SILVA["qcover"] > 95)
+    
+    df_Lineage = pd.read_csv("/mnt/d/linux/W/NCBI/SILVA/SILVA16sDNA.head", sep = "\t", header = None, dtype = str)
+    df_Lineage.columns = ["acc","SILVAtaxa"]
+    df_Lineage["acc"] = df_Lineage["acc"].apply(lambda x:x.split(".")[0])
+    df_Lineage.index = df_Lineage["acc"]
+    df_Lineage = df_Lineage.drop(labels=["acc"], axis = 1)
+    
+    df_SILVA = df_SILVA.join(df_Lineage, on="subject",how="left")
+    
+    
+    # read in SILVA16sDNA.goodLineage as dataframe
+    df_goodLineage = pd.read_csv("/mnt/d/linux/W/NCBI/SILVA/SILVA16sDNA.goodLineage", sep = "\t", dtype = str)
+    df_goodLineage.index = df_goodLineage["taxID"]
+    df_goodLineage = df_goodLineage.drop(labels=["taxID"], axis = 1)
+    
+    df_SILVA = df_SILVA.join(df_goodLineage, on="taxID",how="left")
+    df_SILVA.loc[:,['query', 'subject', 'identity', 'matchLength', 'qcover',
+       'taxID', 'identical'] + taxa + ['SILVAtaxa']].to_excel(folder + "AllSILVAresult.xlsx", index = False)
+    
+    df_SILVA_keep1 = df_SILVA[df_SILVA["filter1"] & df_SILVA["species"] & df_SILVA["taxID"]].drop_duplicates(subset = ["query"], keep = "first").copy()
+    
+    df_SILVA_keep1.loc[:,['query', 'subject', 'identity', 'matchLength', 'qcover',
+       'taxID', 'identical'] + taxa + ['SILVAtaxa']].to_excel(folder + "BestSILVAresult.xlsx", index = False)
+    
+    queries = set(df_SILVA_keep1["query"])
+    fout = open(folder + "sequencesNotIdentifiedSILVA.fasta","w")
+    for seq in SeqIO.parse(open(folder + "AllSeqs.fasta"),"fasta"):
+        if seq.id not in queries:
+            fout.write(">"+seq.id+"\n"+str(seq.seq)+"\n")
+    fout.close()
+    
+
+
+def taxaFinderEzbio(folder = folder, taxa_order = "0"):
+    '''
+    given a path of a folder, output a file with the alignment and taxa info for the sequences
+    '''
+    taxa = dcTaxa[taxa_order]
+    # add the slash to make the path easier to use
+    if folder[-1] != "/":
+        folder = folder + "/"
+    
+    # get paths of all sequence files
+    files = getSeqFiles(folder)
+    
+    # get all fasta sequences
+    fasta_seqs = [getFastaFromFile(e) for e in files]
+    folder = folder + folder.split("/")[-2]+"_"
+    # save the fasta_seqs to a file in folder
+    open(folder + "AllSeqs.fasta","w").write("".join(fasta_seqs))
+    
+    # run local blast against SILVA
+    command_line = "/mnt/d/linux/P/blast/bin/blastn -db /mnt/d/linux/W/NCBI/Ezbio/eztaxon_qiime_full -query {folder}AllSeqs.fasta  -out {folder}AllSeqs.fasta.Ezbio.tab -num_threads 8 -max_target_seqs 100 -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovhsp staxids'".format(folder = folder)
+    subprocess.run(command_line, shell=True)
+    
+    # read in blast result for SILVA
+    df_Ezbio = pd.read_csv("{folder}AllSeqs.fasta.Ezbio.tab".format(folder = folder), sep = "\t",header = None, dtype = {0:str,1:str,2:float,3:int,4:int,5:int,6:int,7:int,8:int,9:int,10:float,11:float,12:int,13:str})
+    df_Ezbio.columns = ["query", "subject","identity","matchLength","missMatch","gap","qstart","qend","sstart", "send", "evalue", "bitScore", "qcover", "taxID"]
+#    df_Ezbio['taxID'] = df_Ezbio["subject"]
+    ## add column 14, length of identical bases
+    df_Ezbio["identical"] = round(df_Ezbio["identity"] * df_Ezbio["matchLength"]/100)
+    
+    ## add a column, to filter identity > 97, qcover > 95
+    df_Ezbio["filter1"] = (df_Ezbio["identity"] > 97) & (df_Ezbio["qcover"] > 95)
+    
+    df_Lineage = pd.read_csv("/mnt/d/linux/W/NCBI/Ezbio/eztaxon_id_taxonomy.txt", sep = "\t", header = None, dtype = str)
+    df_Lineage.columns = ["acc","EzbioTaxa"]
+    df_Lineage["EzbioTaxa"] = df_Lineage["EzbioTaxa"].apply(lambda x:x.replace("_"," "))
+    df_Lineage.index = df_Lineage["acc"]
+    df_Lineage = df_Lineage.drop(labels=["acc"], axis = 1)
+    
+    df_Ezbio = df_Ezbio.join(df_Lineage, on="subject",how="left")
+    
+    
+    # read in SILVA16sDNA.goodLineage as dataframe
+    df_goodLineage = df_Lineage.copy()
+    _l = df_goodLineage["EzbioTaxa"].str.split(";")
+    df_goodLineage["kingdom"], df_goodLineage["phylum"], df_goodLineage["class"], df_goodLineage["order"], df_goodLineage["family"],  df_goodLineage["genus"], df_goodLineage["species"] = _l.str
+    df_goodLineage = df_goodLineage.drop(labels=["EzbioTaxa"], axis = 1)
+    
+    df_Ezbio = df_Ezbio.join(df_goodLineage, on="subject",how="left")
+    df_Ezbio.loc[:,['query', 'subject', 'identity', 'matchLength', 'qcover',
+       'taxID'] + taxa + ['EzbioTaxa']].to_excel(folder + "AllEzbioResult.xlsx", index = False)
+    
+    df_Ezbio_keep1 = df_Ezbio[df_Ezbio["filter1"] & df_Ezbio["species"] & df_Ezbio["taxID"]].drop_duplicates(subset = ["query"], keep = "first").copy()
+    
+    df_Ezbio_keep1.loc[:,['query', 'subject', 'identity', 'matchLength', 'qcover','taxID', 'identical'] + taxa + [ 'EzbioTaxa']].to_excel(folder + "BestEzbioResult.xlsx", index = False)
+    
+    queries = set(df_Ezbio_keep1["query"])
+    fout = open(folder + "sequencesNotIdentifiedEzbio.fasta","w")
+    for seq in SeqIO.parse(open(folder + "AllSeqs.fasta"),"fasta"):
+        if seq.id not in queries:
+            fout.write(">"+seq.id+"\n"+str(seq.seq)+"\n")
+    fout.close()
+
+def taxaFinder(folder = folder, db = "fungi", taxa_order = "0"):
+    '''
+    given a path of a folder, output a file with the alignment and taxa info for the sequences
+    db is the database to use. the keywords
+    '''
+    taxa = dcTaxa[taxa_order]
+    # add the slash to make the path easier to use
+    if folder[-1] != "/":
+        folder = folder + "/"
+    
+    # get paths of all sequence files
+    files = getSeqFiles(folder)
+    
+    # get all fasta sequences
+    fasta_seqs = [getFastaFromFile(e) for e in files]
+    folder = folder + folder.split("/")[-2]+"_"
+    # save the fasta_seqs to a file in folder
+    open(folder + "AllSeqs.fasta","w").write("".join(fasta_seqs))
+    
+    # run local blast against SILVA
+    command_line = "/mnt/d/linux/P/blast/bin/blastn -db {database} -query {folder}AllSeqs.fasta  -out {folder}AllSeqs.fasta.{keyword}.tab -num_threads 8 -max_target_seqs 100 -word_size 28 -outfmt '6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore qcovhsp staxids'".format(folder = folder, database = dcDB[db], keyword=db)
+    subprocess.run(command_line, shell=True)
+    
+    # read in blast result for SILVA
+    df_DB = pd.read_csv("{folder}AllSeqs.fasta.{keyword}.tab".format(folder = folder, keyword=db), sep = "\t",header = None, dtype = {0:str,1:str,2:float,3:int,4:int,5:int,6:int,7:int,8:int,9:int,10:float,11:float,12:int,13:str})
+    df_DB.columns = ["query", "subject","identity","matchLength","missMatch","gap","qstart","qend","sstart", "send", "evalue", "bitScore", "qcover", "taxID"]
+    ## add column 14, length of identical bases
+    df_DB["identical"] = round(df_DB["identity"] * df_DB["matchLength"]/100)
+    
+    ## add a column, to filter identity > 97, qcover > 95
+    df_DB["filter1"] = (df_DB["identity"] > 97) & (df_DB["qcover"] >= 95)
+    
+    if "|" in df_DB.loc[0,"subject"]:
+        df_DB["subject"]=df_DB["subject"].apply(lambda x:x.split("|")[1] if "|" in x else x)
+    
+    if db in dcLineage:
+        df_Lineage = pd.read_csv(dcLineage[db], sep = "\t", header = None, dtype = str)
+        df_Lineage.columns = ["acc",db+"Taxa"]
+        df_Lineage.index = df_Lineage["acc"]
+        df_Lineage = df_Lineage.drop(labels=["acc"], axis = 1)
+        if db == "fungi":
+            df_DB = df_DB.join(df_Lineage, on="subject",how="left")
+        else:
+            df_DB = df_DB.join(df_Lineage, on="taxID",how="left")
+    else:
+        df_DB[db+"Taxa"] = np.NaN
+    
+    
+    # read in SILVA16sDNA.goodLineage as dataframe
+    df_goodLineage = pd.read_csv(dcDB[db] + ".goodLineage", sep = "\t", dtype = str)
+    df_goodLineage.index = df_goodLineage["taxID"]
+    df_goodLineage = df_goodLineage.drop(labels=["taxID"], axis = 1)
+    
+    df_DB = df_DB.join(df_goodLineage, on="taxID",how="left")
+    df_DB.loc[:,['query', 'subject', 'identity', 'matchLength', 'qcover',
+       'taxID', 'identical'] + taxa + [db+"Taxa"]].to_excel(folder + "All{keyword}Result.xlsx".format(keyword=db), index = False)
+    
+    df_DB_keep1 = df_DB[df_DB["filter1"] & df_DB["species"] & df_DB["taxID"]].drop_duplicates(subset = ["query"], keep = "first").copy()
+    
+    df_DB_keep1.loc[:,['query', 'subject', 'identity', 'matchLength', 'qcover','taxID', 'identical'] + taxa + [db+"Taxa"]].to_excel(folder + "Best{keyword}Result.xlsx".format(keyword=db), index = False)
+    
+    queries = set(df_DB_keep1["query"])
+    fout = open(folder + "sequencesNotIdentified{keyword}.fasta".format(keyword=db),"w")
+    for seq in SeqIO.parse(open(folder + "AllSeqs.fasta"),"fasta"):
+        if seq.id not in queries:
+            fout.write(">"+seq.id+"\n"+str(seq.seq)+"\n")
+    fout.close()
+
+import argparse
+parser = argparse.ArgumentParser(description='the folder path of sequencing results')
+parser.add_argument('folder',help = 'input folder path of sequencing results')
+parser.add_argument("--db", "-d", help = "database to use, default SILVA. Currently support SILVA, Ezbio", default = "SILVA")
+parser.add_argument("--taxa_order", "-t", help = "taxa order. default 0, which is ['species', 'genus', 'family', 'order', 'class', 'phylum']", default = "0")
+f = parser.parse_args()
+folder = f.folder
+if f.db == "SILVA":
+    taxaFinderSILVA(folder, taxa_order=f.taxa_order)
+elif f.db == "Ezbio":
+    taxaFinderEzbio(folder, taxa_order=f.taxa_order)
+elif f.db in dcDB:
+    taxaFinder(folder,db=f.db, taxa_order=f.taxa_order)
+else:
+    print("undefined database")
