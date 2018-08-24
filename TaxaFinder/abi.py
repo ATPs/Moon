@@ -33,6 +33,7 @@ def readABI2fastq(filename):
     try:
         f = open(filename,mode="rb")
         s = SeqIO.read(f,format='abi')
+        s.id = s.name #use filename as the id.
         sq = s.format("fastq")
         f.close()
         return sq
@@ -206,7 +207,7 @@ def mergerFastaSeqInFile(filename):
                 _s = '>'+_k+'\n'+str(_v[0].seq)+'\n'
                 fout.write(_s)
                 seq2 += _s
-        elif len(_v) == 2 and _v[0].id in [_k+'-1492R',_k+'-27F'] and _v[1].id in [_k+'-1492R',_k+'-27F']:
+        elif len(_v) == 2 and _v[0].id in [_k+'-1492R',_k+'-27F',_k+'-PA', _k+'-PB'] and _v[1].id in [_k+'-1492R',_k+'-27F',_k+'-PA', _k+'-PB']:
             _seq = mergeLRfastaStr(_v[0], _v[1])
             if len(_seq) < 600:
                 message = message + _k +':two end. Shorter than 600bp\n'
