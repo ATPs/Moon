@@ -3,34 +3,70 @@
 
 {% block content %}
 
+ {% load staticfiles %} 
+<link rel="stylesheet" href="{% static 'css/dropzone.min.css' %}" type="text/css"/>
+<script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
 
 <div class="majordiv">
-
-<h2>Use blastn search to identify taxonomy of target nucleotide sequences</h2>
-<h5>Upload a single <b>ZIP</b> file with your sequences, select databases you want to search and click <button class="btn btn-primary">start search</button></h5>
-
-
-
-
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <input type="file" name="myfile">
-    
-    <br>
-    <input type="checkbox" name="database" value="Ezbio" checked> <a href="http://help.bioiplug.com/about-ezbiocloud-net/" target="_blank">Ezbio</a>： 基因组已知的物种的16s序列<br>
-    <input type="checkbox" name="database" value="SILVA"> <a href="https://www.arb-silva.de/documentation/" target="_blank">SILVA</a>： 所有已知高质量的16s序列<br>
-    <input type="checkbox" name="database" value="fungi"> <a href="https://unite.ut.ee/repository.php" target="_blank">fungi</a>： 专门的真菌ITS数据库<br>
-    <input type="checkbox" name="database" value="nt_micro"> <a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi" target="_blank">nt_micro</a>： ncbi nt去掉动植物序列<br>
-    
-    <button type="submit" class="btn btn-primary">start search</button>
+    <textarea id="seq" rows="5" style="width: 100%; background-color:azure" name="sequences"></textarea>
+
+    <table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: center;">
+      <th>query</th>
+      <th>subject</th>
+      <th>qcover</th>
+      <th>identity</th>
+      <th>taxID</th>
+      <th>species</th>
+      <th>genus</th>
+      <th>family</th>
+      <th>order</th>
+      <th>class</th>
+      <th>phylum</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>test</td>
+      <td>85824</td>
+      <td>100</td>
+      <td>99.925</td>
+      <td>28026</td>
+      <td>Bifidobacterium pseudocatenulatum</td>
+      <td>Bifidobacterium</td>
+      <td>Bifidobacteriaceae</td>
+      <td>Bifidobacteriales</td>
+      <td>Actinobacteria</td>
+      <td>Actinobacteria</td>
+    </tr>
+  </tbody>
+</table>
+
+    <button type="submit" class="btn btn-primary" id="submit_run" onclick="myFunction()">开始比对align</button>
 </form>
 
-{% if uploaded_file_url %}
-    <p>File uploaded at: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></p>
-{% endif %}
+<div class="upload-btn-wrapper">
+  <button class="btn">Upload a file</button>
+  <input type="file" name="myfile" />
+</div>
 
 
-{% include "blastntaxa/include/instruction.html" %} 
+<br><br>
+
+
+
+<style>
+    .dataframe, .dataframe th, .dataframe td {
+        font-size: 0.8rem;
+        border-collapse: collapse;
+        border:1px solid cyan;
+        text-align: center;
+    }
+</style>
+
 
 
 </div>

@@ -1,0 +1,54 @@
+{% extends "header.html" %}
+
+
+{% block content %}
+<div  class="majordiv">
+<h2>序列比对 align sequences</h2>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <h5>选择程序choose blast program</h5>
+    <div class="form-check">
+       <input type="radio" name="blast_method" value="blastn" checked > blastn：比对DNA序列<br>
+       <input type="radio" name="blast_method" value="blastp" > blastp：比对氨基酸序列<br>
+       <input type="radio" name="blast_method" value="tblastn" > tblastn：query是氨基酸序列，subject是DNA<br>
+    </div>
+    
+    <br>
+    
+    <div >
+        <h5>填写query, DNA或蛋白质序列1：单条序列或多条fasta格式序列</h5>
+        <textarea id="seq" rows="5" style="width: 100%; background-color:azure" name="sequences1"></textarea>
+        <p>或者上传文件（单条序列或多条fasta格式序列）<input type="file" name="myfile1" class="inputbox"></p>
+    </div>
+    
+    
+    <br>
+    <div>
+        <h5>填写subject, DNA或蛋白质序列2：单条序列或多条fasta格式序列</h5>
+        <textarea id="seq" rows="5" style="width: 100%; background-color:beige" name="sequences2"></textarea>
+        <p>或者上传文件（单条序列或多条fasta格式序列）<input type="file" name="myfile2" class="inputbox"></p>
+    </div>
+    
+
+    <button type="submit" class="btn btn-primary" id="submit_run" onclick="myFunction()">开始比对align</button>
+</form>
+
+<br><br>
+<p>Notes:</p>
+<ul>
+    <li><a href="https://www.ebi.ac.uk/Tools/psa/" target="_blank">如果有其他序列比对需求，可以点击这里看看EBI提供的服务</a></li>
+    <li><a href="https://blast.ncbi.nlm.nih.gov/Blast.cgi" target="_blank">NCBI官方的blast程序，勾选"Align two or more sequences"</a></li>
+</ul>
+<p></p>
+<script>
+function myFunction() {
+    document.getElementById("submit_run").innerHTML = "running! wait!正在运行，不要再次点击";
+    document.getElementById("submit_run").style.background = "red";
+}
+</script>
+
+
+</div>
+{% endblock %}

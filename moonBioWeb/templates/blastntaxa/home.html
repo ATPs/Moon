@@ -4,20 +4,25 @@
 {% block content %}
 <div class="majordiv">
 
-<h2>Use blastn search to identify taxonomy of target nucleotide sequences</h2>
-<h5>Upload a single <b>ZIP</b> file with your sequences, select databases you want to search and click <button class="btn btn-primary">start search</button></h5>
-<p>比对真菌序列，如果是<b>abi/ab1</b>文件，先通过点击导航栏的<a href="/blastntaxa/abi">ABI</a>，将abi文件转化为序列文件，再进行物种鉴定</p>
-<p style="color: red">升级了！如果是单个的文本文件，不用改扩展名，不用压缩为zip文件，直接提交。</p>
+<h2>使用blastn来鉴定目标序列的分类信息</h2>
+<p>如果是单个文本格式文件（只包含单条序列，或者为包含多条序列的fasta格式），直接提交。</p>
+<p>如果是多条序列文件，确保每个序列文件的扩展名是'.seq'或者'.SEQ'，压缩为<b>ZIP</b>文件，再提交。</p>
 <p>当提交的序列很多时，需要运行很久才能得到结果。长时间等待，与服务器之间的连接可能会断开，导致结果无法呈现。
-    <a href="today">可尝试点击这里查看本月全部结果。文件名是任务提交的时间，精确到秒。已经提交过的任务不用再次提交啦。</a> 
+    <a href="today">点击这里查看本月全部结果，点击对应的文件下载。文件名是任务提交的时间，精确到秒。已经提交过的任务不用再次提交啦。</a> 
 </p>
+<p style="color: red">比对真菌序列或者单端测序的结果，序列的开头和结尾包含许多低质量碱基。下载'abi/ab1'文件（序列图谱），用导航栏的<a href="/blastntaxa/abi">ABI</a>，将abi文件转化为序列文件，再进行物种鉴定！低质量碱基会被删除。</p>
+<h1 style="color: red">单边测序的结果，必须下载ABI文件！！！看看红字说明！！！</h1>
+<p style="background-color: yellow">升级：nt_micro，Ezbio序列升级到最新版（截至20180810）。增加kingdom列。之前的"species"是可能是"物种species"，也可能是"亚种subspecies、株系等"。之前的taxID、species两列更名为'taxID','name',新增加两列'species_id'，'species'。“bestResult”种取消了以95% qcover和97% identity筛选标准，改由个人根据自己看到的情况自行判断。</p>
+
 
 
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <input type="file" name="myfile">
     
-    <br><br>
+    <p>输入单条序列或多条fasta格式的序列，用于物种鉴定</p>
+    <textarea id="seq" rows="3" style="width: 100%; background-color:azure" name="sequences"></textarea>
+    <p>或者按照说明上传文件<input type="file" name="myfile"></p>
+    <br>
     <p>选择至少一个database。细菌建议选择Ezbio，也可加上SILVA，也可以用nt_micro。真菌建议选择fungi和nt_micro。选择Ezbio/fungi，程序运行的较快。nt_micro会比较慢。提交序列数目没有上限。通过导航栏的"taxonomy"按钮来刷新页面</p>
     <div class="form-check">
         <input type="checkbox" name="database" value="Ezbio" checked> <a href="http://help.bioiplug.com/about-ezbiocloud-net/" target="_blank">Ezbio</a>： 基因组已知的物种的16s序列<br>
@@ -28,11 +33,11 @@
     
     <br><p>选择taxonomy的呈现顺序：</p>
     <div class="form-check">
-        <input type="radio" name="taxonomy" value="0" checked>default: 'species', 'genus','family', 'order', 'class', 'phylum' <br>
-        <input type="radio" name="taxonomy" value="1">reverse: 'phylum', 'class', 'order', 'family', 'genus', 'species' <br>
-        <input type="radio" name="taxonomy" value="2">reverse2: 'species', 'phylum', 'class', 'order', 'family', 'genus' <br>
+        <input type="radio" name="taxonomy" value="0" checked>default: 'species', 'genus','family', 'order', 'class', 'phylum', 'kingdom'<br>
+        <input type="radio" name="taxonomy" value="1">reverse: 'kingdom','phylum', 'class', 'order', 'family', 'genus', 'species' <br>
+        <input type="radio" name="taxonomy" value="2">reverse2: 'species','kingdom', 'phylum', 'class', 'order', 'family', 'genus' <br>
     </div>
-    <button type="submit" class="btn btn-primary" id="submit_run" onclick="myFunction()">start search</button>
+    <button type="submit" class="btn btn-primary" id="submit_run" onclick="myFunction()">start search开始工作吧</button>
     
 </form>
 <script>
@@ -45,15 +50,15 @@ function myFunction() {
 <p></p>
 
 {% if uploaded_file_url %}
-    <h4>Finished! Download the result here: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></h4>
+    <h4 style="color: red">任务完成，下载结果吧: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></h4>
 {% endif %}
 
 <h2>{{ result }}</h2>
+{{best_table|safe}}
 
 
 {% include "blastntaxa/include/instruction.html" %} 
 <p style="color: red">如果一个文件里面有很多条fasta序列，直接把文件扩展名改为'.seq'，就可以当作普通序列文件来用了。</p>
-<p style="color: red">如果很久也没有出结果，不要关闭网页，只需耐心等待。不要重新点击“start search”按钮！</p>
 
 
 </div>

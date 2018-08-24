@@ -2,24 +2,80 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>MoonBio</title>
+    <title>MoonBiotech 慕恩生物 公司内网</title>
     {% load staticfiles %} 
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" type="text/css"/>
+    <!--<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" type="text/css"/>-->
     <link rel="stylesheet" href="{% static 'moonXC/moonXC.css' %}" type="text/css"/>
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
 <div class="wrapper">
-    <headnav>
-       <ul>
-           <li><a href="/" class="company" title="MoonBio Internal Usage. Click to go back to the home page">MoonBio</a></li>
-           <li ><a href="/blastntaxa/"  title="use blastn search for taxonamy of target nucleotide sequences">taxonomy</a></li>
-           <li ><a href="/blastntaxa/abi"  title="convert abi to fasta">ABI</a></li>
-           <li ><a href="/blast"  title="blast search with nucleotide or protein sequences">blast</a></li>
-           <li><a href="http://www.bioinformatics.nl/cgi-bin/emboss/merger"  title="拼接双端测序序列，外部网站" target="_blank">merger</a></li>
-           <li><a href="/helps/post" title="Help information" class="help" >Help</a></li>
-       </ul>
-    </headnav>
+    <div class="navbar">
+       <div class="tooltip">
+           <a href="/" class="company" title="慕恩生物公司内部网站，公司新闻">MoonBiotech</a>
+           <div class='tooltip-content'>慕恩生物公司内部网站。主页</div>
+       </div>
+       <div  class="tooltip">
+           <a href="/blastntaxa/"  title="通过blastn搜索，比对16s，ITS5或者其他DNA序列，来鉴定物种种系信息。">分类</a>
+           <div class='tooltip-content'>通过blastn搜索，比对16s，ITS5或者其他DNA序列，来鉴定物种种系信息。</div>
+       </div>
+       <div  class="tooltip">
+           <a href="/blastntaxa/abi"  title="将ABI/AB1文件转化为fasta格式文件">ABI</a>
+           <div class='tooltip-content'>将ABI/AB1文件转化为fasta格式文件</div>
+       </div>
+        
+        <div class="dropdown  tooltip">
+            <button class="dropbtn" title="blast搜索，align序列，拼接双端测序序列">工具&#9662; 
+            </button>
+            <div class="dropdown-content">
+                <a href="/blast"  title="blast search with nucleotide or protein sequences">blast: 搜索DNA/蛋白质序列</a>
+                <a href="/align"  title="比对两条（组）DNA或者蛋白质序列">align：序列比对</a>
+                <a href="http://www.bioinformatics.nl/cgi-bin/emboss/merger"  title="拼接双端测序序列，外部网站" target="_blank">merger：拼接双端测序序列，外部网站</a>
+            </div>
+        </div>
+        
+       <div  class="tooltip">
+           <a href="/human_microbes">人体细菌</a>
+           <div class='tooltip-content'>细菌物种鉴定，“一步到位”，汇总数据与序列</div>
+       </div>
+       <div  class="tooltip">
+           <a href="/env_microbes">环境细菌</a>
+           <div class='tooltip-content'>微生物多样性组，全国各地各种环境中的细菌,物种鉴定，“一步到位”，汇总数据与序列</div>
+       </div>
+       <div  class="tooltip">
+           <a href="/env_fungi">真菌</a>
+           <div class='tooltip-content'>微生物多样性组，全国各地各种环境中的真菌,物种鉴定，“一步到位”，汇总数据与序列</div>
+       </div>
+        <!--
+       <div  class="tooltip">
+           <a href="#">农业</a>
+           <div class='tooltip-content'>农业微生物组，PPFM、解磷菌等</div>
+       </div>
+       <div  class="tooltip">
+           <a href="#">生信</a>
+           <div class='tooltip-content'>生物信息组，让你的数据处理及其他与计算机网络相关的工作更轻松</div>
+       </div>
+       <div  class="tooltip">
+           <a href="#">健康</a>
+           <div class='tooltip-content'>人体营养与健康组，开发营养补充剂以及与肿瘤、糖尿病康复相关的健康食品</div>
+       </div>
+       <div  class="tooltip">
+           <a href="#">市场</a>
+           <div class='tooltip-content'>市场与业务，公司农业等相关产品的推广销售</div>
+       </div>
+       <div  class="tooltip">
+           <a href="#">资料</a>
+           <div class='tooltip-content'>公司内可共享的各种资料资源</div>
+       </div>
+        -->
+        
+       <div  class="tooltip" style="float:right">
+           <a href="/helps/post" title="各种帮助信息" class="help" >帮助</a>
+           <div class='tooltip-content'>各种帮助信息</div>
+       </div>
+        
+    </div>
 
     <div>
         {% block content %}
@@ -28,7 +84,7 @@
 </div>
 
     
-    <footer class="footer">Copyright &copy; MoonBio 2018. By XC</footer>
+    <footer class="footer">Copyright &copy; MoonBiotech 2018. By XC</footer>
 
 </body>
 </html>

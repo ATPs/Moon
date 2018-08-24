@@ -17,8 +17,8 @@
     
     <br>
     <h5>填写DNA或蛋白质序列：单条序列或多条fasta格式序列</h5>
-    <textarea id="seq" rows="10" style="width: 100%; background-color:azure" name="sequences"></textarea>
-    <p>或者上传文件（单条序列或多条fasta格式序列）<input type="file" name="myfile"></p>
+    <textarea id="seq" rows="5" style="width: 100%; background-color:azure" name="sequences"></textarea>
+    <p>或者上传文件（单条序列或多条fasta格式序列）<input type="file" name="myfile" ></p>
     
     <br>
     <h5>选择blast数据库</h5>
@@ -31,6 +31,14 @@
         <input type="radio" name="blast_db" value="fungi" > fungi: DNA. 专门的真菌ITS数据库<br>
         <input type="radio" name="blast_db" value="nr" > nr: 蛋白质. ncbi nr。数据库很大，会相当慢。公司没有换性能更强的服务器的话，慎用！<br>
         
+    </div>
+    
+    <br>
+    <h5>选择输出格式: <a href="https://www.ncbi.nlm.nih.gov/books/NBK279684/" target="_blank">各个格式说明</a></h5>
+    <div class="form-check">
+        <input type="radio" name="blast_out" value="0" checked > 默认格式，序列比对的样式（最常见）,outfmt=0 <br>
+        <input type="radio" name="blast_out" value="7"> table格式，outfmt=7 <br>
+        <input type="radio" name="blast_out" value="5" > xml格式，常用于编程，outfmt=5       <br>
     </div>
 
     <button type="submit" class="btn btn-primary" id="submit_run" onclick="myFunction()">blast</button>

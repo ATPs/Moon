@@ -5,10 +5,13 @@
 <div class="majordiv">
 
 <h2>将一个或多个二进制的'<b>.abi</b>'或'<b>.ab1</b>'文件转化为文本格式的序列文件</h2>
-<h5>如果是一个文件，直接提交。如果是多个文件，将多个需要转化的abi文件打包为一个<b>ZIP</b>文件,再提交。点击<button class="btn btn-primary">convert</button>执行格式转化</h5>
+<h5>如果是一个文件，直接提交。如果是多个文件，将多个需要转化的abi文件打包为一个<b>ZIP</b>文件,再提交。点击<span style="color: blue">convert格式转化</span>执行任务</h5>
 <p>单个文件的转化结果直接在网页上显示。'.zip'文件的结果在网页上显示，也可以下载</p>
-<p>convert '<b>.abi</b>' or '<b>.ab1</b>' file(s) to fasta. Upload a single '<b>.ab1</b>' file or a <b>ZIP</b> file with your abi files, and click "convert"</p>
+<p>convert '<b>.abi</b>' or '<b>.ab1</b>' file(s) to fasta. Upload a single '<b>.ab1</b>' file or a <b>ZIP</b> file with your abi files, and click "convert格式转化"</p>
 
+<p style="color: red;">新增拼接功能。注意，如果要拼接，文件名称要符合规范.只拼接命名为MN(H)d(5-10位数字)-27F.ab1, MN(H)d(5-10位数字)-1492R.ab1的文件.20180821 文件名新增对MN(H)d(5-10位数字)-PA.ab1, MN(H)d(5-10位数字)-PB.ab1的支持。例如MNH010476-27F.ab1, MNH010476-1492R.ab1;  MN010476-27F.ab1, MN010476-1492R.ab1;MN010476-PA.ab1, MN010476-PB.ab1</p>
+
+<br><br>
 
 
 
@@ -16,8 +19,12 @@
     {% csrf_token %}
     <input type="file" name="myfile">
     
+    <div class="form-check">是否尝试拼接序列?
+        <input type="radio" name="merge" value="0" checked>否
+        <input type="radio" name="merge" value="1">是 (拼接序列，长于600bp才输出结果哦。)<br>
+    </div>
     
-    <button type="submit" class="btn btn-primary">convert</button>
+    <button type="submit" class="btn btn-primary">convert格式转化</button>
 </form>
 
 {% if uploaded_file_url %}
@@ -26,6 +33,12 @@
 
 <h2>{{ result|linebreaksbr }}</h2>
 <p style="word-wrap: break-word;">{{ fasta|linebreaksbr }}</p>
+
+<br><br>
+<h5>工作原理：</h5>
+<p>二进制的'.ab1'文件首先被转化为fastq格式，每一个碱基都有一个质量分数。最低质量分数qmin设置为20，即平均下来每一百个碱基出现错误的概率为1%。首先去除序列开头含有"N"的区段。以10个碱基为窗口，计算平均的质量分数。如果平均质量分数大于qmin，则延长序列，否则从下一个质量分数大于qmin的窗口，继续延长。这样，序列会被分为1个或多个"优质区段"。优质区段如果含有"N",则进一步被打断。选择最长的"优质区段"，如果它的长度小于200，证明整个测序结果不好，不会返回任何序列；如果长度大于200，则返回最长的"优质区段"</p>
+
+<p>拼接：质控后的前端与后端测序的序列，找到它们最长的匹配序列。如果前后端质量均较差，则不返回任何序列。如果最长的匹配序列少于50bp，则返回最长的前端/后端序列；如果长于或等于50bp，则取前端的前部、匹配序列和后端的后部为全长序列</p>
 
 
 {% include "blastntaxa/include/instruction.html" %} 

@@ -220,3 +220,7 @@ ls_mergedAllSeqIO = [e for e in ls_AllSeqIO if '27F' not in e.id and '1492R' not
 print(Counter([len(e.id) for e in ls_mergedAllSeqIO]))
 #Counter({8: 4232, 9: 324, 10: 12, 16: 106, 18: 106})
 dc_mergedAllSeqIO ={re.split('-|_',e.id)[0]:[] for e in ls_mergedAllSeqIO}
+
+
+## 20180822 collect info for HumanMicrobiotaBank
+### species identified in humans

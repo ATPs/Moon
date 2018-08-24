@@ -1,0 +1,90 @@
+{% extends "header.html" %}
+
+
+{% block content %}
+<div class="majordiv" style="background-image: url(/media/HumanMicrobes/human.gif);background-size: auto;background-attachment: fixed;background-position: center;">
+
+<h2>细菌物种鉴定，“一步到位” 人体组专用</h2>
+<p>只需提交一个excel文件，需要分析的行，在"Analysis"一列填入字母"Y",就会在此表种更新这些物种的分类信息</p>
+
+<p style="color: red">比对真菌序列或者单端测序的结果，序列的开头和结尾包含许多低质量碱基。下载'abi/ab1'文件（序列图谱），用导航栏的<a href="/blastntaxa/abi">ABI</a>，将abi文件转化为序列文件，再进行物种鉴定！低质量碱基会被删除。</p>
+<h1 style="color: red">单边测序的结果，必须下载ABI文件！！！看看红字说明！！！</h1>
+
+<p style="color: blue">升级：nt_micro，Ezbio序列升级到最新版（截至20180810）。增加kingdom列。之前的"species"是可能是"物种species"，也可能是"亚种subspecies、株系等"。之前的taxID、species两列更名为'taxID','name',新增加两列'species_id'，'species'。“bestResult”种取消了以95% qcover和97% identity筛选标准，改由个人根据自己看到的情况自行判断。注意，本网页同时只能运行一个程序，如果有人在程序未完成的时候调用了这个程序，二者会相互干扰，导致结果出错。</p>
+
+<p>当序列很多时，需要运行很久才能得到结果。长时间等待，与服务器之间的连接可能会断开，导致结果无法呈现。
+    <a href="/this_month">点击这里查看本月全部结果，点击对应的文件下载。文件名是任务提交的时间，精确到天。已经提交过的任务不用再次提交啦。</a> 
+</p>
+
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <br>
+    <h2>在这里上传一个<span style="color: red;">Excel! </span><span style="color: red;">Excel! </span><span style="color: red;">Excel! </span>文件<input type="file" name="myfile"></h2>
+    
+    <button type="submit" class="btn btn-primary" id="submit_run" onclick="myFunction()">start search开始工作吧</button>
+    
+</form>
+<script>
+function myFunction() {
+    document.getElementById("submit_run").innerHTML = "running! wait!正在运行，不要再次点击";
+    document.getElementById("submit_run").style.background = "red";
+}
+</script>
+
+<p></p>
+
+{% if uploaded_file_url %}
+    <h4 style="color: red">任务完成，下载结果吧: <a href="{{ uploaded_file_url }}">{{ uploaded_file_url }}</a></h4>
+{% endif %}
+
+<br>
+<br>
+<h5>Excel文件某些列的内容说明：</h5>
+<ul>
+    <li>index: 行号</li>
+    <li>all_IDs： MN/MNH编号</li>
+    <li>seq：DNA序列</li>
+    <li>seq_len：DNA序列长度</li>
+    <li>Analysis：如果需要分析，填入字母“Y”。注意，是大写字母。</li>
+    <li>Notes：任何你想填写的备注信息</li>
+    <li>HM_subject：match到Ezbio（外加人体上发现的细菌）数据库的序列的名称。这个名称可以在通过NCBI找到序列</li>
+    <li>HM_matchLength：match到Ezbio序列的长度</li>
+    <li>HM_identical：match到Ezbio序列的相同碱基的长度</li>
+    <li>HM_qcover：query序列参与match的百分比</li>
+    <li>HM_identity：match的相似的。</li>
+    <li>HM_taxID：match到Ezbio的菌株的taxonomy ID. 一般来说，来自Ezbio的序列，物种的基因组均已测序</li>
+    <li>HM_name：match到Ezbio的菌株的名字</li>
+    <li>HM_species_id：match到Ezbio的物种的taxonomy ID</li>
+    <li>HM_species：match到Ezbio的物种的名字</li>
+    <li>HM_genus：界门纲目科属种</li>
+    <li>HM_family：界门纲目科属种</li>
+    <li>HM_order：界门纲目科属种</li>
+    <li>HM_class：界门纲目科属种</li>
+    <li>HM_phylum：界门纲目科属种</li>
+    <li>HM_kingdom：界门纲目科属种</li>
+    <li>nt_subject：match到nt_micro (ncbi nt去除植物与后生生物的序列）的序列名称</li>
+    <li>nt_matchLength：：match到nt_micro序列的相同碱基的长度</li>
+    <li>nt_identical:match到nt_micro序列的相同碱基的长度</li>
+    <li>nt_qcover:query序列参与match的百分比</li>
+    <li>nt_identity：match的相似的。</li>
+    <li>nt_taxID:match到nt_micro的菌株的taxonomy ID.</li>
+    <li>nt_name:match到nt_micro的菌株的名字</li>
+    <li>nt_species_id:match到nt_micro的物种的taxonomy ID</li>
+    <li>nt_species:match到nt_micro的物种的名字</li>
+    <li>nt_genus：界门纲目科属种</li>
+    <li>nt_family：界门纲目科属种</li>
+    <li>nt_order：界门纲目科属种</li>
+    <li>nt_class：界门纲目科属种</li>
+    <li>nt_phylum：界门纲目科属种</li>
+    <li>nt_kingdom：界门纲目科属种</li>
+    <li>MatchMNH:match到本excel表中的最长非冗余的序列的ID</li>
+    <li>MatchMNH_len：该最长非冗余序列的长度</li>
+    <li>其他列，随意安排，会在最新的表里保留</li>
+</ul>
+
+
+</div>
+
+{% endblock %}
