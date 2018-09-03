@@ -80,9 +80,9 @@ def abi_converter(filename):
         #print(seq)
     
     htmlpath = os.path.join('/mnt/d/linux/M/www/Django/moonbio/media', 'AB1',foldernameYearMonth)
-    os.rename(os.path.join(folder, filename),os.path.join(htmlpath, foldername + filename))
     if not os.path.exists(htmlpath):
         os.makedirs(htmlpath)
+    os.rename(os.path.join(folder, filename),os.path.join(htmlpath, foldername + filename))
     fout = open(os.path.join(htmlpath, foldername + filename[:-4]+'.seq'),'w')
     [fout.write(e) for e in seqs]
     fout.close()
